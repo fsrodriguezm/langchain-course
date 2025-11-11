@@ -6,8 +6,21 @@ from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 from tavily import TavilyClient
 from langchain_tavily import TavilySearch
+from typing import List
+from pydantic import BaseModel, Field
+from functions import tavily_search
 
 load_dotenv()
+
+class Source(BaseModel):
+    """Schema for a source used by the agent."""
+    url: str = Field(description="The URL of the source")
+
+class AgentResponse(BaseModel):
+    """Schema for agent response with answer and sources."""
+
+    answer: str = Field(description="The agent's answer to the query")
+    sources: List[Source] = Field(default_factory=list, description="List of sources used to generate the answer")
 
 # # Custom search tool using Tavily
 # tavily = TavilyClient()
@@ -33,13 +46,16 @@ load_dotenv()
 llm = ChatOpenAI(model="gpt-4", temperature=0)
 local_llm = ChatOllama(model="llama3.2", temperature=0)
 # tools = [search] # Using custom search tool
-tools = [TavilySearch()]
-agent = create_agent(model=local_llm, tools=tools)
+# tools = [TavilySearch()] # Using Tavily search tool
+tools = [tavily_search] # Using Tavily search tool defined in functions.py
+
+# agent = create_agent(model=local_llm, tools=tools) # Using Tavily search tool
+agent = create_agent(model=local_llm, tools=tools, response_format=AgentResponse)
 
 def main():
     print("Hello from 2-search-agent!")
     # result = agent.invoke({"messages":HumanMessage(content="What is the weather in El Salvador?")})
-    result = agent.invoke({"messages":HumanMessage(content="Search for 3 AI Solutions Engineer job posts using langchain in Northern Virginia on LinkedIn and list their details.")})
+    result = agent.invoke({"messages":HumanMessage(content="Search for 3 AI Platform Engineer job posts using langchain in Northern Virginia on LinkedIn and list their details.")})
     print(f"Agent result: {result}")
 
     agent_message = result["messages"][-1] 
