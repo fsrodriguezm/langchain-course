@@ -1,41 +1,45 @@
 from dotenv import load_dotenv
-load_dotenv()
-
 from langchain.agents import create_agent
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 from tavily import TavilyClient
+from langchain_tavily import TavilySearch
 
-tavily = TavilyClient()
+load_dotenv()
 
-@tool
-def search(query: str) -> str:
-    """
-    Tool that searches over the internet.
-    Args:
-        query: The query to search for
-    Returns:
-        The search results
-    """
-    print(f"Searching for: {query}")
+# # Custom search tool using Tavily
+# tavily = TavilyClient()
 
-    # For demonstration purposes, we return a static response.
-    # return "El Salvador weather is sunny"
+# @tool
+# def search(query: str) -> str:
+#     """
+#     Tool that searches over the internet.
+#     Args:
+#         query: The query to search for
+#     Returns:
+#         The search results
+#     """
+#     print(f"Searching for: {query}")
 
-    # In a real implementation, you would call the Tavily search API like this:
-    return tavily.search(query=query)
+#     # For demonstration purposes, we return a static response.
+#     # return "El Salvador weather is sunny"
+
+#     # In a real implementation, you would call the Tavily search API like this:
+#     return tavily.search(query=query)
 
 # Create an agent with the search tool
 llm = ChatOpenAI(model="gpt-4", temperature=0)
 local_llm = ChatOllama(model="llama3.2", temperature=0)
-tools = [search]
+# tools = [search] # Using custom search tool
+tools = [TavilySearch()]
 agent = create_agent(model=local_llm, tools=tools)
 
 def main():
     print("Hello from 2-search-agent!")
-    result = agent.invoke({"messages":HumanMessage(content="What is the weather in El Salvador?")})
+    # result = agent.invoke({"messages":HumanMessage(content="What is the weather in El Salvador?")})
+    result = agent.invoke({"messages":HumanMessage(content="Search for 3 AI Solutions Engineer job posts using langchain in Northern Virginia on LinkedIn and list their details.")})
     print(f"Agent result: {result}")
 
     agent_message = result["messages"][-1] 
