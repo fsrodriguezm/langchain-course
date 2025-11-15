@@ -1,11 +1,6 @@
 import os
 from dotenv import load_dotenv
-# from langchain import hub
-# from langchain.agents import AgentExecutor
-# from langchain.agents.react.agent import create_react_agent
-# from langchain.agents.react.agent import create_react_agent
-from langchain_experimental import create_react_agent
-# from langchain import create_react_agent
+from langchain_classic.agents import AgentExecutor, create_react_agent
 from langchain_tavily import TavilySearch
 from langsmith import Client
 from langchain_ollama import ChatOllama
@@ -28,8 +23,16 @@ agent = create_react_agent(
     prompt=react_prompt,
 )
 
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
 def main():
     print("Hello from 3-react-search-agent!")
+    result = agent_executor.invoke(
+        {
+            "input": "Search for 3 AI Platform Engineer job posts using langchain in Northern Virginia on LinkedIn posted in the last week and list their details.",
+        }
+    )
+    print(result)
 
 if __name__ == "__main__":
     main()
